@@ -48,13 +48,13 @@ int main( int argc, char** argv )
     ROS_INFO("Waiting for the move_base action server to come up");
   }
 
-  if( set_goal(ac, 3.0, 0.0, 1.0) ) {
+  if( set_goal(ac, 0.0, -2.667, 1.0) ) {
     return -1;
   }
 
   ros::Duration(5.0).sleep();
 
-  if( set_goal(ac, -3.0, 0.0, 1.0) ) {
+  if( set_goal(ac, -4.5, 7.9, 1.819) ) {
     return -1;
   }
 }
