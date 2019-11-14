@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 // Define a client for to send goal requests to the move_base server through a SimpleActionClient
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -35,10 +36,32 @@ int set_goal( MoveBaseClient &ac, float x, float y, float w )
   }
 }
 
+void set_pose_estimate( ros::Publisher &pose_pub )
+{
+  geometry_msgs::PoseWithCovarianceStamped msg;
+  msg.header.frame_id = "map";
+  msg.header.stamp = ros::Time::now();
+
+  msg.pose.pose.position.x = 0.046838644892;
+  msg.pose.pose.position.y = 0.159260526299;
+  msg.pose.pose.position.z = 0;
+  msg.pose.pose.orientation.x = 0;
+  msg.pose.pose.orientation.y = 0;
+  msg.pose.pose.orientation.z = -0.713794180781;
+  msg.pose.pose.orientation.w = 0.700355529344;
+  msg.pose.covariance[0] = 0.25;
+  msg.pose.covariance[7] = 0.25;
+  msg.pose.covariance[35] = 0.06853891945200942;
+  pose_pub.publish(msg);
+}
+
 int main( int argc, char** argv )
 {
   // Initialize the pick_objects node
   ros::init( argc, argv, "pick_objects" );
+
+  ros::NodeHandle n;
+  ros::Publisher pose_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 20);
 
   //tell the action client that we want to spin a thread by default
   MoveBaseClient ac( "move_base", true );
@@ -47,6 +70,11 @@ int main( int argc, char** argv )
   while( !ac.waitForServer( ros::Duration(5.0) ) ) {
     ROS_INFO("Waiting for the move_base action server to come up");
   }
+
+  // Set initial pose
+  set_pose_estimate( pose_pub );
+
+  ros::Duration(1.0).sleep();
 
   if( set_goal(ac, 0.0, -2.667, 1.0) ) {
     return -1;
