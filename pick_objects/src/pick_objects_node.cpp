@@ -6,7 +6,7 @@
 // Define a client for to send goal requests to the move_base server through a SimpleActionClient
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-int set_goal( MoveBaseClient &ac, float x, float y, float w )
+int set_goal( MoveBaseClient &ac, float x, float y, float z, float w)
 {
   move_base_msgs::MoveBaseGoal goal;
 
@@ -17,7 +17,13 @@ int set_goal( MoveBaseClient &ac, float x, float y, float w )
   // Define a position and orientation for the robot to reach
   goal.target_pose.pose.position.x = x;
   goal.target_pose.pose.position.y = y;
+  goal.target_pose.pose.orientation.z = z;
   goal.target_pose.pose.orientation.w = w;
+  ROS_INFO("orientation = %f, %f, %f, %f",
+    goal.target_pose.pose.orientation,x,
+    goal.target_pose.pose.orientation.y,
+    goal.target_pose.pose.orientation.z,
+    goal.target_pose.pose.orientation.w);
 
    // Send the goal position and orientation for the robot to reach
   ROS_INFO("Sending goal");
@@ -76,13 +82,13 @@ int main( int argc, char** argv )
 
   ros::Duration(1.0).sleep();
 
-  if( set_goal(ac, 0.0, -2.667, 1.0) ) {
+  if( set_goal(ac, -2.48608756065, 0, -0.711587503742, 0.702597483996) ) {
     return -1;
   }
 
   ros::Duration(5.0).sleep();
 
-  if( set_goal(ac, -4.5, 7.9, 1.819) ) {
+  if( set_goal(ac, 7.9, 4.5, 0.0057830503341, 0.999983278025) ) {
     return -1;
   }
 }
