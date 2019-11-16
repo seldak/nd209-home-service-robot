@@ -60,7 +60,7 @@ int main( int argc, char** argv )
     }
     marker_pub.publish( marker );
 
-    r.sleep();
+    ros::Duration(1.0).sleep();
   }
 }
 
