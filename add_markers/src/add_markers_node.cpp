@@ -14,7 +14,7 @@ int main( int argc, char** argv )
   while( ros::ok() ) {
     visualization_msgs::Marker marker;
     // Set the frame ID and timestamp.  See the TF tutorials for information on these.
-    marker.header.frame_id = "/map";
+    marker.header.frame_id = "map";
     marker.header.stamp = ros::Time::now();
 
     // Set the namespace and id for this marker.  This serves to create a unique ID
