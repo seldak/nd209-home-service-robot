@@ -29,3 +29,5 @@ The two ROS nodes developed in this project are also launched.
 ```
 
 It is important to execute the script as shown above, as the yaml, map and world files are referenced relatively from the catkin workspace folder.
+
+![](screenshot.gif)
