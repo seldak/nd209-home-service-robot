@@ -21,7 +21,7 @@ int set_goal( MoveBaseClient &ac, float x, float y, float z, float w)
   goal.target_pose.pose.orientation.z = z;
   goal.target_pose.pose.orientation.w = w;
   ROS_INFO("orientation = %f, %f, %f, %f",
-    goal.target_pose.pose.orientation,x,
+    goal.target_pose.pose.orientation.x,
     goal.target_pose.pose.orientation.y,
     goal.target_pose.pose.orientation.z,
     goal.target_pose.pose.orientation.w);
