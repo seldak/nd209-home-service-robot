@@ -4,10 +4,23 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <add_markers/MarkerCommand.h>
 
+struct goal_pose {
+    float pose_x;
+    float pose_y;
+    float orientation_z;
+    float orientation_w;
+};
+
+enum goal_id {
+    PICKUP = 0,
+    DROPOFF,
+    NUM_GOALS,
+};
+
 // Define a client for to send goal requests to the move_base server through a SimpleActionClient
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-int set_goal( MoveBaseClient &ac, float x, float y, float z, float w)
+int set_goal( MoveBaseClient &ac, struct goal_pose &pose )
 {
   move_base_msgs::MoveBaseGoal goal;
 
@@ -16,10 +29,10 @@ int set_goal( MoveBaseClient &ac, float x, float y, float z, float w)
   goal.target_pose.header.stamp = ros::Time::now();
 
   // Define a position and orientation for the robot to reach
-  goal.target_pose.pose.position.x = x;
-  goal.target_pose.pose.position.y = y;
-  goal.target_pose.pose.orientation.z = z;
-  goal.target_pose.pose.orientation.w = w;
+  goal.target_pose.pose.position.x = pose.pose_x;
+  goal.target_pose.pose.position.y = pose.pose_y;
+  goal.target_pose.pose.orientation.z = pose.orientation_z;
+  goal.target_pose.pose.orientation.w = pose.orientation_w;
   ROS_INFO("orientation = %f, %f, %f, %f",
     goal.target_pose.pose.orientation.x,
     goal.target_pose.pose.orientation.y,
@@ -35,10 +48,10 @@ int set_goal( MoveBaseClient &ac, float x, float y, float z, float w)
 
   // Check if the robot reached its goal
   if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    ROS_INFO("Hooray, robot moved successfully to position (%f, %f)", x, y);
+    ROS_INFO("Robot moved successfully to position (%f, %f)", pose.pose_x, pose.pose_y);
     return 0;
   } else {
-    ROS_INFO("The base failed to move to position (%f, %f) for some reason", x, y);
+    ROS_INFO("The base failed to move to position (%f, %f) for some reason", pose.pose_x, pose.pose_y);
     return -1;
   }
 }
@@ -62,17 +75,15 @@ void set_pose_estimate( ros::Publisher &pose_pub )
   pose_pub.publish(msg);
 }
 
-static void add_marker( ros::Publisher &marker_pub,
-                        float pose_x, float pose_y,
-                        float orientation_z, float orientation_w )
+static void add_marker( ros::Publisher &marker_pub, struct goal_pose &pose )
 {
   add_markers::MarkerCommand cmd;
 
   cmd.command = "add";
-  cmd.pose_x = pose_x;
-  cmd.pose_y = pose_x;
-  cmd.orientation_z = orientation_z;
-  cmd.orientation_w = orientation_w;
+  cmd.pose_x = pose.pose_x;
+  cmd.pose_y = pose.pose_y;
+  cmd.orientation_z = pose.orientation_z;
+  cmd.orientation_w = pose.orientation_w;
 
   marker_pub.publish(cmd);
 }
@@ -85,6 +96,11 @@ static void delete_marker( ros::Publisher &marker_pub )
 
   marker_pub.publish(cmd);
 }
+
+struct goal_pose goal_poses[NUM_GOALS] = {
+  { -2.48608756065, 0.0, -0.711587503742, 0.702597483996 },
+  {  7.9,           4.5, 0.0057830503341, 0.999983278025 },
+};
 
 int main( int argc, char** argv )
 {
@@ -105,20 +121,23 @@ int main( int argc, char** argv )
 
   // Set initial pose
   set_pose_estimate( pose_pub );
-
-  add_marker( marker_pub, -2.48608756065, 0, -0.711587503742, 0.702597483996);
   ros::Duration(1.0).sleep();
+
+  struct goal_pose pickup = goal_poses[PICKUP];
+  struct goal_pose dropoff = goal_poses[DROPOFF];
+
+  add_marker( marker_pub, pickup );
   
-  if( set_goal(ac, -2.48608756065, 0, -0.711587503742, 0.702597483996) ) {
+  if( set_goal( ac, pickup ) ) {
     return -1;
   }
   delete_marker( marker_pub );
 
   ros::Duration(5.0).sleep();
 
-  if( set_goal(ac, 7.9, 4.5, 0.0057830503341, 0.999983278025) ) {
+  if( set_goal( ac, dropoff ) ) {
     return -1;
   }
-  add_marker( marker_pub, 7.9, 4.5, 0.0057830503341, 0.999983278025);
+  add_marker( marker_pub, dropoff );
 }
 
