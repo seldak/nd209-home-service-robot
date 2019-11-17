@@ -55,6 +55,7 @@ void handle_add_marker_command(const add_markers::MarkerCommandPtr &cmd)
       ROS_WARN_ONCE("Please create a subscriber to the marker");
       sleep(1);
     }
+    ROS_INFO("Publishing marker");
     marker_pub.publish( marker );
 }
 
