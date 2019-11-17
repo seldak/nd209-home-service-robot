@@ -2,6 +2,7 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <add_markers/MarkerCommand.h>
 
 // Define a client for to send goal requests to the move_base server through a SimpleActionClient
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -61,6 +62,30 @@ void set_pose_estimate( ros::Publisher &pose_pub )
   pose_pub.publish(msg);
 }
 
+static void add_marker( ros::Publisher &marker_pub,
+                        float pose_x, float pose_y,
+                        float orientation_z, float orientation_w )
+{
+  add_markers::MarkerCommand cmd;
+
+  cmd.command = "add";
+  cmd.pose_x = pose_x;
+  cmd.pose_y = pose_x;
+  cmd.orientation_z = orientation_z;
+  cmd.orientation_w = orientation_w;
+
+  marker_pub.publish(cmd);
+}
+
+static void delete_marker( ros::Publisher &marker_pub )
+{
+  add_markers::MarkerCommand cmd;
+
+  cmd.command = "delete";
+
+  marker_pub.publish(cmd);
+}
+
 int main( int argc, char** argv )
 {
   // Initialize the pick_objects node
@@ -68,6 +93,7 @@ int main( int argc, char** argv )
 
   ros::NodeHandle n;
   ros::Publisher pose_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 20);
+  ros::Publisher marker_pub = n.advertise<add_markers::MarkerCommand>("/add_markers/marker_command", 5);
 
   //tell the action client that we want to spin a thread by default
   MoveBaseClient ac( "move_base", true );
@@ -80,16 +106,19 @@ int main( int argc, char** argv )
   // Set initial pose
   set_pose_estimate( pose_pub );
 
+  add_marker( marker_pub, -2.48608756065, 0, -0.711587503742, 0.702597483996);
   ros::Duration(1.0).sleep();
-
+  
   if( set_goal(ac, -2.48608756065, 0, -0.711587503742, 0.702597483996) ) {
     return -1;
   }
+  delete_marker( marker_pub );
 
   ros::Duration(5.0).sleep();
 
   if( set_goal(ac, 7.9, 4.5, 0.0057830503341, 0.999983278025) ) {
     return -1;
   }
+  add_marker( marker_pub, 7.9, 4.5, 0.0057830503341, 0.999983278025);
 }
 
