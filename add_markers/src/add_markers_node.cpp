@@ -99,7 +99,7 @@ int main( int argc, char** argv )
   ros::init(argc, argv, "add_markers");
   ros::NodeHandle n;
 
-  ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+  marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 100);
   ros::Subscriber sub = n.subscribe("/add_markers/marker_command", 1, handle_marker_command);
 
   ros::spin();
